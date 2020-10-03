@@ -29,15 +29,49 @@ class CalendarsController < ApplicationController
 
     @week_days = []
 
-    @plans = Plan.where(date: @todays_date..@todays_date + 7)
+    @plans = Plan.where(date: @todays_date..@todays_date + 365)
 
-    7.times do |x|
+    365.times do |x|
       plans = []
       plan = @plans.map do |plan|
         plans.push(plan.plan) if plan.date == @todays_date + x
       end
-      days = { :month => (@todays_date + x).month, :date => @todays_date.day + x, :plans => plans ,:wdays => wdays[0++x]}
+      wday_num = Date.today.wday + x #Date.today.wdaysを利用して添字となる数値を得る
+      #もしもwday_numが7以上であれば、7を引く
+      52.times do  
+        if wday_num >= 7
+          wday_num = wday_num - 7
+        end
+      end
+
+
+      month_num = (Date.today + x).month
+      day_num = (Date.today + x).day
+
+      if month_num == 2 then
+        #29日まである月
+        if day_num >= 30
+          day_num = day_num - 29
+        end
+      elsif  month_num == 4|| month_num == 6 || month_num == 9 || month_num == 11  then
+        #30日まである月
+        if day_num >= 31
+          day_num = day_num - 30
+        end
+      else
+        #31日まである月
+        if day_num >= 32
+          day_num = day_num - 31
+        end
+      end
+
+      days = { month: month_num, date: day_num, wdays: wdays[wday_num], plans: plans }
       @week_days.push(days)
     end
   end
 end
+
+# 1 3 5 7 10 
+# :wdays => wdays[(@todays_date + x).wday]
+
+# :wdays => wdays[0++x]
